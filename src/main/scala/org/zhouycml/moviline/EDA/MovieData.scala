@@ -1,6 +1,8 @@
-package org.zhouycml.moviline
+package org.zhouycml.moviline.EDA
 
 import org.apache.spark.sql.{DataFrame}
+
+import org.zhouycml.moviline.utils.Utils
 
 object MovieData {
 
