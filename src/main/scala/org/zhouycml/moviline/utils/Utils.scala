@@ -79,4 +79,17 @@ object Utils {
         1900
     }
   }
+
+  def replaceEmptyStr(v:Int): Int ={
+    try{
+      if(v.equals(""))
+        return 1900
+      else
+        return v
+    }catch {
+      case e:Exception=>println(e)
+        return 1900
+    }
+  }
+
 }
