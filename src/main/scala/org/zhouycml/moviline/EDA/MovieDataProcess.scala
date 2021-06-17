@@ -27,6 +27,16 @@ object MovieDataProcess {
 
     val movieYearsFiltered = movieYears.filter(x => (x==1900))
     val movieYearsValid = yearReplaced.filter(x=>(x!=1900)).collect()
+
     val movieYearsValidInt = new Array[Int](movieYearsValid.length)
+    for( i <- 0 until movieYearsValidInt.length-1){
+      val x = Integer.parseInt(movieYearsValid(i)(0).toString)
+      movieYearsValidInt(i) = x
+    }
+
+    val yearsReplacesRDD = sc.parallelize(movieYearsValidInt)
+
+    val num = movieYearsValidInt.length
+    val sum_y = 0
   }
 }
