@@ -2,6 +2,7 @@ package org.zhouycml.moviline.EDA
 
 import org.zhouycml.moviline.utils.Utils
 
+
 object UserData {
   def main(args: Array[String]): Unit = {
     val spark = Utils.spark
@@ -14,6 +15,8 @@ object UserData {
     val first = userDF.first()
     println(s"First User Record:$first")
 
+    userDF.show()
+
     val numGenders = userDF.groupBy("gender").count()
     val numOccupation = userDF.groupBy("occupation").count()
     val numZipcodes = userDF.groupBy("zipcode").count()
@@ -23,6 +26,8 @@ object UserData {
     numGenders.show()
     println("************user show***********")
     numOccupation.show()
+
+    sc.stop()
 
   }
 }

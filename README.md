@@ -4,5 +4,5 @@ This project(or code base) is used to practice Spark
 reference: https://www.oreilly.com/library/view/machine-learning-with/9781785889936/
 
 - move data 100k analysis(updating...)
-- a movie recommendation system(incoming...)
+- multiple classification example(updating...)
 
