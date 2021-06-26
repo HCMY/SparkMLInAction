@@ -49,7 +49,7 @@ object DecisionTreePipeline {
     println(s"Training time: $elapsed_time")
 
     val hold_out = model.transform(val_set)
-    hold_out.show()
+    hold_out.select("prediction", "label", "features").show(100)
 
     val evaluator = new MulticlassClassificationEvaluator()
       .setLabelCol("label")

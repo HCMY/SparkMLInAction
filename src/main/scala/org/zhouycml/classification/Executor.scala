@@ -6,7 +6,7 @@ import org.apache.spark.sql.functions.{udf,monotonically_increasing_id}
 import org.apache.spark.ml.feature.VectorAssembler
 
 
-import org.zhouycml.classification.DecisionTreePipeline
+import org.zhouycml.classification.{DecisionTreePipeline,GradientBoostTreePipeline}
 
 object Executor {0
   def main(args: Array[String]): Unit = {
@@ -104,9 +104,26 @@ object Executor {0
                           "numwords_in_url", "parametrizedLinkRatio", "spelling_errors_ratio"))
       .setOutputCol("features")
 
+    val model_name = args(1)
+    if(model_name == "dt")
+      DecisionTreePipeline.decisionTreePipeline(vectorAssembler = assembler ,dataFrame = df4)
+    else{
+      var tmp_df = df4.withColumn("index", monotonically_increasing_id())
+        .select("label","index")
+      var tmp_feature = assembler.transform(df4)
+        .withColumn("index",monotonically_increasing_id())
+        .select("features","index")
 
-    DecisionTreePipeline.decisionTreePipeline(vectorAssembler = assembler ,dataFrame = df4)
+      val df_last = tmp_df.as("df1").join(tmp_feature.as("df2"),
+        tmp_df("index")===tmp_feature("index"),"inner")
+        .select("df1.label","df2.features")
 
+      df_last.show()
+
+      GradientBoostTreePipeline.gradientBoostTreePipeline(dataFrame = df_last)
+
+
+    }
     sc.stop()
   }
 }
