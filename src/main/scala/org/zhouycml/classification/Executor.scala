@@ -2,8 +2,11 @@ package org.zhouycml.classification
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.{SQLContext, DataFrame}
-import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.functions.{udf,monotonically_increasing_id}
 import org.apache.spark.ml.feature.VectorAssembler
+
+
+import org.zhouycml.classification.DecisionTreePipeline
 
 object Executor {0
   def main(args: Array[String]): Unit = {
@@ -52,7 +55,8 @@ object Executor {0
       .withColumn("label", df("label").cast("double"))
     df1.printSchema()
 
-    val replaceFunc = udf {(x:Double)=> if(x=="?") 0.0 else x}
+    val replaceFunc = udf {(x:Double)=> if(x =="?") 0.0 else x}
+
     val df2 = df1.withColumn("avglinksize", replaceFunc(df1("avglinksize")))
       .withColumn("commonlinkratio_1", replaceFunc(df1("commonlinkratio_1")))
       .withColumn("commonlinkratio_2", replaceFunc(df1("commonlinkratio_2")))
@@ -88,17 +92,20 @@ object Executor {0
 
     df4.createOrReplaceTempView("StumbleUpon_PreProc")
     spark.sql("select * from StumbleUpon_PreProc limit 10").show()
+    df4.printSchema()
 
     val assembler = new VectorAssembler()
       .setInputCols(Array("avglinksize", "commonlinkratio_1", "commonlinkratio_2",
                           "commonlinkratio_3", "commonlinkratio_4", "compression_ratio",
                           "embed_ratio", "framebased", "frameTagRatio", "hasDomainLink",
                           "html_ratio", "image_ratio","is_news", "lengthyLinkDomain",
-                          "linkwordscore", "news_front_page", "non_markup_alphanum_characters", "numberOfLinks",
+                          "linkwordscore", "news_front_page", "non_markup_alphanum_characters",
+                          "numberOfLinks",
                           "numwords_in_url", "parametrizedLinkRatio", "spelling_errors_ratio"))
-      .setOutputCol("feature")
+      .setOutputCol("features")
 
 
+    DecisionTreePipeline.decisionTreePipeline(vectorAssembler = assembler ,dataFrame = df4)
 
     sc.stop()
   }
