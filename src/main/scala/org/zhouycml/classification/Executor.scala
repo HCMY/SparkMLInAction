@@ -6,7 +6,9 @@ import org.apache.spark.sql.functions.{udf,monotonically_increasing_id}
 import org.apache.spark.ml.feature.VectorAssembler
 
 
-import org.zhouycml.classification.{DecisionTreePipeline,GradientBoostTreePipeline}
+import org.zhouycml.classification.{DecisionTreePipeline,
+                                    GradientBoostTreePipeline,
+                                    LogisticRegressionPipeline}
 
 object Executor {0
   def main(args: Array[String]): Unit = {
@@ -105,25 +107,30 @@ object Executor {0
       .setOutputCol("features")
 
     val model_name = args(1)
-    if(model_name == "dt")
-      DecisionTreePipeline.decisionTreePipeline(vectorAssembler = assembler ,dataFrame = df4)
-    else{
+
+    if(model_name == "gbdt") {
       var tmp_df = df4.withColumn("index", monotonically_increasing_id())
-        .select("label","index")
+        .select("label", "index")
       var tmp_feature = assembler.transform(df4)
-        .withColumn("index",monotonically_increasing_id())
-        .select("features","index")
+        .withColumn("index", monotonically_increasing_id())
+        .select("features", "index")
 
       val df_last = tmp_df.as("df1").join(tmp_feature.as("df2"),
-        tmp_df("index")===tmp_feature("index"),"inner")
-        .select("df1.label","df2.features")
-
+        tmp_df("index") === tmp_feature("index"), "inner")
+        .select("df1.label", "df2.features")
       df_last.show()
-
       GradientBoostTreePipeline.gradientBoostTreePipeline(dataFrame = df_last)
-
-
     }
+    else{
+        model_name match {
+          case "dt" =>
+            DecisionTreePipeline.decisionTreePipeline(vectorAssembler = assembler ,dataFrame = df4)
+          case "lr" =>
+            LogisticRegressionPipeline.logisticRegressionPipeline(assembler, df4)
+          case _ =>
+            println("invalid algorithm name")
+        }
+      }
     sc.stop()
   }
 }
