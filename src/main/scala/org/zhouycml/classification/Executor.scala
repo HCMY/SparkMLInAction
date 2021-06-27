@@ -8,7 +8,8 @@ import org.apache.spark.ml.feature.VectorAssembler
 
 import org.zhouycml.classification.{DecisionTreePipeline,
                                     GradientBoostTreePipeline,
-                                    LogisticRegressionPipeline}
+                                    LogisticRegressionPipeline,
+                                    RandomForestPipeline}
 
 object Executor {0
   def main(args: Array[String]): Unit = {
@@ -106,6 +107,9 @@ object Executor {0
                           "numwords_in_url", "parametrizedLinkRatio", "spelling_errors_ratio"))
       .setOutputCol("features")
 
+    val df_last = assembler.transform(df4).select("features","label")
+    df_last.show()
+
     val model_name = args(1)
 
     if(model_name == "gbdt") {
@@ -120,20 +124,29 @@ object Executor {0
         tmp_df("index") === tmp_feature("index"), "inner")
         .select("df1.label", "df2.features")
        */
-      val df_last = assembler.transform(df4).select("features","label")
-      df_last.show()
       GradientBoostTreePipeline.gradientBoostTreePipeline(dataFrame = df_last)
     }
     else{
         model_name match {
           case "dt" =>
             DecisionTreePipeline.decisionTreePipeline(vectorAssembler = assembler ,dataFrame = df4)
+
           case "lr" =>
             LogisticRegressionPipeline.logisticRegressionPipeline(assembler, df4)
+
+          case "rf"=>
+            val prediction_save_path = args(2)
+            val model_save_path = args(3)
+            println(s"model save path: $model_save_path")
+            println(s"predcition save path: $prediction_save_path")
+            val rf = new RandomForestPipeline(prediction_save_path, model_save_path)
+            rf.randomForestPipeline(dataFrame = df_last)
+
           case _ =>
             println("invalid algorithm name")
         }
       }
+
     sc.stop()
   }
 }
