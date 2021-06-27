@@ -109,6 +109,7 @@ object Executor {0
     val model_name = args(1)
 
     if(model_name == "gbdt") {
+      /*
       var tmp_df = df4.withColumn("index", monotonically_increasing_id())
         .select("label", "index")
       var tmp_feature = assembler.transform(df4)
@@ -118,6 +119,8 @@ object Executor {0
       val df_last = tmp_df.as("df1").join(tmp_feature.as("df2"),
         tmp_df("index") === tmp_feature("index"), "inner")
         .select("df1.label", "df2.features")
+       */
+      val df_last = assembler.transform(df4).select("features","label")
       df_last.show()
       GradientBoostTreePipeline.gradientBoostTreePipeline(dataFrame = df_last)
     }
