@@ -67,6 +67,12 @@
       <version>0.81</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.github.scopt</groupId>
+      <artifactId>scopt_2.10</artifactId>
+      <version>3.2.0</version>
+    </dependency>
+
 
 
   </dependencies>
@@ -89,9 +95,6 @@
           <args>
             <arg>-target:jvm-${maven.compiler.target}</arg>
           </args>
-
-
-
         </configuration>
       </plugin>
       <plugin>
@@ -113,6 +116,7 @@
       </plugin>
     </plugins>
   </build>
+
   <reporting>
     <plugins>
       <plugin>

@@ -5,12 +5,43 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.sql.functions.{monotonically_increasing_id, udf}
 import org.apache.spark.ml.feature.VectorAssembler
 import org.spark_project.jetty.io.ByteBufferPool.Bucket
+
+import scopt.OptionParser
+
 import org.zhouycml.classification.{DecisionTreePipeline, GradientBoostTreePipeline, LogisticRegressionPipeline, RandomForestPipeline, XGBPipeline}
 import org.zhouycml.featureengreening.Bucketer
 
 
+
+case class Params(
+                inputFilePath:String="",
+                outputFilePath:String="",
+                modelSavePath:String="",
+                 algoName:String="")
+
 object Executor {
+  val parser = new OptionParser[Params]("argparser") {
+    opt[String]('i', "input").required().action {
+      (x, c) => c.copy(inputFilePath = x)
+    }.text("file path for training")
+
+    opt[String]('o',"output").optional().action{
+      (x,c)=>c.copy(outputFilePath = x)
+    }.text("output file path")
+
+    opt[String]('m',"model").optional().action{
+      (x,c)=>c.copy(modelSavePath = x)
+    }.text("model save path")
+
+    opt[String]('a',"alg").required().action{
+      (x,c)=>c.copy(algoName = x)
+    }.text("algorithms name, [gbdt,rf,bucket,lr]")
+  }
+
   def main(args: Array[String]): Unit = {
+
+    val params = parser.parse(args, Params()).get
+
     val spark = new SparkSession
     .Builder()
       .appName("classification")
@@ -18,7 +49,7 @@ object Executor {
       .getOrCreate()
 
     val sc = spark.sparkContext
-    val filePath = args(0)
+    val filePath = params.inputFilePath
     println(s"read file from :$filePath")
 
     val df = spark.read.format("csv")
@@ -108,7 +139,7 @@ object Executor {
     val df_last = assembler.transform(df4).select("features","label")
     df_last.show()
 
-    val model_name = args(1)
+    val model_name = params.algoName
 
     if(model_name == "gbdt") {
       /*
@@ -133,8 +164,8 @@ object Executor {
             LogisticRegressionPipeline.logisticRegressionPipeline(assembler, df4)
 
           case "rf"=>
-            val prediction_save_path = args(2)
-            val model_save_path = args(3)
+            val prediction_save_path = params.outputFilePath
+            val model_save_path = params.modelSavePath
             println(s"model save path: $model_save_path")
             println(s"predcition save path: $prediction_save_path")
             val rf = new RandomForestPipeline(prediction_save_path, model_save_path)
@@ -147,7 +178,7 @@ object Executor {
               //.setLabelCol("label")
             //val model = bucketer.fit(df4)
             //model.save(args(2))
-            val bucketedDF = bucketer.loadModel(args(2)).transform(df4)
+            val bucketedDF = bucketer.loadModel(params.modelSavePath).transform(df4)
             bucketedDF.show()
           case _ =>
             println("invalid algorithm name")
