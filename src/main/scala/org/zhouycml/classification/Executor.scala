@@ -1,17 +1,15 @@
 package org.zhouycml.classification
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.{SQLContext, DataFrame}
-import org.apache.spark.sql.functions.{udf,monotonically_increasing_id}
+import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.functions.{monotonically_increasing_id, udf}
 import org.apache.spark.ml.feature.VectorAssembler
+import org.spark_project.jetty.io.ByteBufferPool.Bucket
+import org.zhouycml.classification.{DecisionTreePipeline, GradientBoostTreePipeline, LogisticRegressionPipeline, RandomForestPipeline, XGBPipeline}
+import org.zhouycml.featureengreening.Bucketer
 
 
-import org.zhouycml.classification.{DecisionTreePipeline,
-                                    GradientBoostTreePipeline,
-                                    LogisticRegressionPipeline,
-                                    RandomForestPipeline}
-
-object Executor {0
+object Executor {
   def main(args: Array[String]): Unit = {
     val spark = new SparkSession
     .Builder()
@@ -142,6 +140,15 @@ object Executor {0
             val rf = new RandomForestPipeline(prediction_save_path, model_save_path)
             rf.randomForestPipeline(dataFrame = df_last)
 
+          case "xgb" => XGBPipeline.xgbPipeline(dataFrame = df_last)
+          case "bucket" =>
+            val bucketer = new Bucketer()
+              //.setNumBuckets(100)
+              //.setLabelCol("label")
+            //val model = bucketer.fit(df4)
+            //model.save(args(2))
+            val bucketedDF = bucketer.loadModel(args(2)).transform(df4)
+            bucketedDF.show()
           case _ =>
             println("invalid algorithm name")
         }

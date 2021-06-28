@@ -11,6 +11,7 @@ class RandomForestPipeline(prediction_save_path:String,
   val pre_save_path = prediction_save_path
   val mod_save_path = model_save_path
 
+
   def randomForestPipeline(dataFrame: DataFrame): Unit ={
     val Array(train_set, val_set) = dataFrame.randomSplit(Array(0.8, 0.2))
 
