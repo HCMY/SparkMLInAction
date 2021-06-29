@@ -17,7 +17,7 @@ case class Params(
                 inputFilePath:String="",
                 outputFilePath:String="",
                 modelSavePath:String="",
-                 algoName:String="")
+                algoName:String="")
 
 object Executor {
   val parser = new OptionParser[Params]("argparser") {

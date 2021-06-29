@@ -1,4 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.zhouycml</groupId>
   <artifactId>SparkMLInAction</artifactId>
@@ -28,13 +29,11 @@
   </pluginRepositories>
 
   <dependencies>
-
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
       <version>${scala.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_2.11</artifactId>
@@ -50,7 +49,6 @@
       <artifactId>spark-sql_2.11</artifactId>
       <version>${spark.version}</version>
     </dependency>
-
     <dependency>
       <groupId>ml.dmlc</groupId>
       <artifactId>xgboost4j</artifactId>
@@ -66,15 +64,11 @@
       <artifactId>xgboost4j-spark</artifactId>
       <version>0.81</version>
     </dependency>
-
     <dependency>
       <groupId>com.github.scopt</groupId>
       <artifactId>scopt_2.10</artifactId>
       <version>3.2.0</version>
     </dependency>
-
-
-
   </dependencies>
 
   <build>

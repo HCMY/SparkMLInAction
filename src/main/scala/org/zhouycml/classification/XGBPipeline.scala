@@ -13,7 +13,6 @@ object XGBPipeline {
     val xgbParam = Map("eta" -> 0.1f,
                         "missing"->0.0,
                         "objective"->"binary:logistic",
-                        "num_class"->2,
                         "num_round"->100,
                         "num_workers"->2)
 
