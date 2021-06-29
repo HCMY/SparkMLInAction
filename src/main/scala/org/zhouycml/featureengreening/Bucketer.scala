@@ -12,7 +12,6 @@ class Bucketer() {
   private var labelColName = ""
   private var  model = ArrayBuffer[Bucketizer]()
 
-
   def setNumBuckets(value:Int): this.type ={
     numBuckets = value
     this
@@ -32,18 +31,18 @@ class Bucketer() {
     this
   }
 
+  def getBucketedCols():Array[String]={
+    val cols = model(0).getOutputCols
+    cols
+  }
+
 
   def transform(dataFrame: DataFrame):DataFrame={
     val trainedModel:Bucketizer = model(0)
     val inputCols = trainedModel.getInputCols
-
     val bucketedDF = trainedModel.transform(dataFrame).drop(inputCols:_*)
-
     bucketedDF
   }
-
-
-
 
   def autoDetectColType(dataFrame: DataFrame): Array[String] ={
     val collectedCols = new ArrayBuffer[String]()
@@ -69,8 +68,13 @@ class Bucketer() {
       .setOutputCols(bucketedCols)
       .setNumBuckets(numBuckets)
 
-    val model = quantileDiscretizer.fit(dataFrame)
-    model
+    val trainedModel = quantileDiscretizer.fit(dataFrame)
+    model.append(trainedModel)
+    trainedModel
+  }
+
+  def saveModel(): Unit ={
+    model(0).save(savePath)
   }
 
 

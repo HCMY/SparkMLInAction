@@ -172,6 +172,18 @@ object Executor {
             rf.randomForestPipeline(dataFrame = df_last)
 
           case "xgb" => XGBPipeline.xgbPipeline(dataFrame = df_last)
+          case "xgb-buk" =>
+            val bucketer = new Bucketer()
+              .setLabelCol("label")
+              .setNumBuckets(200)
+            val dfBucketed = bucketer.fit(df4).transform(df4)
+            val bucketedCols = bucketer.getBucketedCols()
+            val assember = new VectorAssembler()
+              .setInputCols(bucketedCols)
+              .setOutputCol("features")
+            val fitDF = assember.transform(dfBucketed).select("features","label")
+            XGBPipeline.xgbPipeline(dataFrame = fitDF)
+
           case "bucket" =>
             val bucketer = new Bucketer()
               //.setNumBuckets(100)
@@ -179,6 +191,7 @@ object Executor {
             //val model = bucketer.fit(df4)
             //model.save(args(2))
             val bucketedDF = bucketer.loadModel(params.modelSavePath).transform(df4)
+
             bucketedDF.show()
           case _ =>
             println("invalid algorithm name")
