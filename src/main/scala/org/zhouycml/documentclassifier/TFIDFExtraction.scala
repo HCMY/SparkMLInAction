@@ -1,5 +1,6 @@
 package org.zhouycml.documentclassifier
 
+import org.apache.spark.rdd.RDD
 import org.zhouycml.moviline.utils.Utils
 
 object TFIDFExtraction {
