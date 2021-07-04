@@ -141,62 +141,51 @@ object Executor {
 
     val model_name = params.algoName
 
-    if(model_name == "gbdt") {
-      /*
-      var tmp_df = df4.withColumn("index", monotonically_increasing_id())
-        .select("label", "index")
-      var tmp_feature = assembler.transform(df4)
-        .withColumn("index", monotonically_increasing_id())
-        .select("features", "index")
-
-      val df_last = tmp_df.as("df1").join(tmp_feature.as("df2"),
-        tmp_df("index") === tmp_feature("index"), "inner")
-        .select("df1.label", "df2.features")
-       */
+    model_name match {
+      case "gbdt" =>
       GradientBoostTreePipeline.gradientBoostTreePipeline(dataFrame = df_last)
+
+      case "dt" =>
+        DecisionTreePipeline.decisionTreePipeline(vectorAssembler = assembler ,dataFrame = df4)
+
+      case "lr" =>
+        LogisticRegressionPipeline.logisticRegressionPipeline(assembler, df4)
+
+      case "rf"=>
+        val prediction_save_path = params.outputFilePath
+        val model_save_path = params.modelSavePath
+        println(s"model save path: $model_save_path")
+        println(s"predcition save path: $prediction_save_path")
+        val rf = new RandomForestPipeline(prediction_save_path, model_save_path)
+        rf.randomForestPipeline(dataFrame = df_last)
+
+      case "xgb" =>
+        XGBPipeline.xgbPipeline(dataFrame = df_last)
+
+      case "xgb-buk" =>
+        val bucketer = new Bucketer()
+          .setLabelCol("label")
+          .setNumBuckets(200)
+        val dfBucketed = bucketer.fit(df4).transform(df4)
+        val bucketedCols = bucketer.getBucketedCols()
+        val assember = new VectorAssembler()
+          .setInputCols(bucketedCols)
+          .setOutputCol("features")
+        val fitDF = assember.transform(dfBucketed).select("features","label")
+        XGBPipeline.xgbPipeline(dataFrame = fitDF)
+
+      case "bucket" =>
+        val bucketer = new Bucketer()
+          .setNumBuckets(100)
+          .setLabelCol("label")
+        val model = bucketer.fit(df4)
+        model.save(args(2))
+        val bucketedDF = bucketer.loadModel(params.modelSavePath).transform(df4)
+
+        bucketedDF.show()
+      case _ =>
+        println("invalid algorithm name")
     }
-    else{
-        model_name match {
-          case "dt" =>
-            DecisionTreePipeline.decisionTreePipeline(vectorAssembler = assembler ,dataFrame = df4)
-
-          case "lr" =>
-            LogisticRegressionPipeline.logisticRegressionPipeline(assembler, df4)
-
-          case "rf"=>
-            val prediction_save_path = params.outputFilePath
-            val model_save_path = params.modelSavePath
-            println(s"model save path: $model_save_path")
-            println(s"predcition save path: $prediction_save_path")
-            val rf = new RandomForestPipeline(prediction_save_path, model_save_path)
-            rf.randomForestPipeline(dataFrame = df_last)
-
-          case "xgb" => XGBPipeline.xgbPipeline(dataFrame = df_last)
-          case "xgb-buk" =>
-            val bucketer = new Bucketer()
-              .setLabelCol("label")
-              .setNumBuckets(200)
-            val dfBucketed = bucketer.fit(df4).transform(df4)
-            val bucketedCols = bucketer.getBucketedCols()
-            val assember = new VectorAssembler()
-              .setInputCols(bucketedCols)
-              .setOutputCol("features")
-            val fitDF = assember.transform(dfBucketed).select("features","label")
-            XGBPipeline.xgbPipeline(dataFrame = fitDF)
-
-          case "bucket" =>
-            val bucketer = new Bucketer()
-              //.setNumBuckets(100)
-              //.setLabelCol("label")
-            //val model = bucketer.fit(df4)
-            //model.save(args(2))
-            val bucketedDF = bucketer.loadModel(params.modelSavePath).transform(df4)
-
-            bucketedDF.show()
-          case _ =>
-            println("invalid algorithm name")
-        }
-      }
 
     sc.stop()
   }
